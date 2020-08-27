@@ -1,0 +1,58 @@
+import tensorflow as tf
+from pycocotools.coco import COCO
+
+#Constants
+BATCH_SIZE = 1
+AUTOTUNE = tf.data.experimental.AUTOTUNE
+
+CLASSES = ["dog", "cat"]
+COUNT_CLASSES = len(CLASSES)
+
+NO_OBJECT_LOSS_MULTIPLIER = 1.0
+LOCALISATION_LOSS_MULTIPLIER = 1.0
+
+CONFIDENCE_THRESHOLD = 0.5
+COUNT_BOUNDING_BOXES = 2
+IMAGE_SIZE_WIDTH = 448
+IMAGE_SIZE_HEIGHT = 448
+CELL_NUMBER_HORI = 7
+CELL_NUMBER_VERT = 7
+CELL_COUNT = CELL_NUMBER_HORI * CELL_NUMBER_VERT
+CELL_WIDTH = IMAGE_SIZE_WIDTH / CELL_NUMBER_HORI
+CELL_HEIGHT = IMAGE_SIZE_HEIGHT / CELL_NUMBER_VERT
+NUM_PARAMS = COUNT_BOUNDING_BOXES*5 + COUNT_CLASSES
+NUM_PARAMS_LABEL = COUNT_BOUNDING_BOXES*4 + COUNT_CLASSES #labels dont need IOU-Value
+PARAMS_PER_ROW = NUM_PARAMS*CELL_NUMBER_HORI
+PARAMS_PER_ROW_LABEL = NUM_PARAMS_LABEL*CELL_NUMBER_HORI
+
+dataDir='.//images//'
+dataType='train2017'
+
+validationPath='val2017'
+valAnnFile='{}annotations\\instances_{}.json'.format(dataDir,validationPath)
+
+annFile='{}annotations\\instances_{}.json'.format(dataDir,dataType)
+
+coco=COCO(annFile)
+
+CATEGORIES = coco.loadCats(coco.getCatIds())
+nms=[cat['name'] for cat in CATEGORIES]
+
+CATEGORY_IDS = coco.getCatIds((CLASSES[0], CLASSES[1]))
+CLASSES_TO_INDEX = {CLASSES[0]: 0, CLASSES[1]: 1}
+IMAGE_IDS = coco.getImgIds(catIds=CATEGORY_IDS )
+IMAGE_LIST = coco.loadImgs(IMAGE_IDS)
+ANNOTATION_IDs = coco.getAnnIds(IMAGE_IDS)
+ANNOTATIONS = coco.loadAnns(ANNOTATION_IDs)
+
+TEST_IMAGE = IMAGE_LIST[5]
+TEST_IMAGE_PATH = dataDir + dataType + "\\" + TEST_IMAGE['file_name']
+
+valCOCO=COCO(valAnnFile)
+
+VAL_IMAGE_IDS = valCOCO.getImgIds(catIds=CATEGORY_IDS )
+VAL_IMAGE_LIST = valCOCO.loadImgs(VAL_IMAGE_IDS)
+VAL_ANNOTATION_IDs = valCOCO.getAnnIds(VAL_IMAGE_IDS)
+VAL_ANNOTATIONS = valCOCO.loadAnns(VAL_ANNOTATION_IDs)
+
+
